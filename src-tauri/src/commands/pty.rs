@@ -37,7 +37,7 @@ pub async fn start_pty(
         }
     });
 
-    let cmd = if cfg!(target_os = "windows") {
+    let mut cmd = if cfg!(target_os = "windows") {
         CommandBuilder::new("cmd.exe")
     } else {
         CommandBuilder::new("bash")
