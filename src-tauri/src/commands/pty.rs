@@ -1,67 +1,53 @@
-use std::fs;
-use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
+use tauri::{AppHandle, Emitter, State};
+use crate::state::PtyState;
+use std::io::Write;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct FileNode {
-    pub name: String, pub path: String, pub is_dir: bool,
+#[tauri::command]
+pub async fn start_pty(app: AppHandle, id: u32, cwd: String, state: State<'_, PtyState>) -> Result<(), String> {
+    let pty_system = native_pty_system();
+    let pair = pty_system.openpty(PtySize {
+        rows: 24, cols: 80, pixel_width: 0, pixel_height: 0,
+    }).map_err(|e| e.to_string())?;
+
+    let mut reader = pair.master.try_clone_reader().map_err(|e| e.to_string())?;
+    let app_handle = app.clone();
+    
+    std::thread::spawn(move || {
+        let mut buf = [0u8; 8192];
+        loop {
+            match reader.read(&mut buf) {
+                Ok(0) => break,
+                Ok(n) => {
+                    let data = String::from_utf8_lossy(&buf[..n]).to_string();
+                    let _ = app_handle.emit(&format!("pty-{}", id), data);
+                }
+                Err(_) => break,
+            }
+        }
+    });
+
+    let cmd = if cfg!(target_os = "windows") {
+        CommandBuilder::new("cmd.exe")
+    } else {
+        CommandBuilder::new("bash")
+    };
+    cmd.cwd(cwd);
+
+    let writer = pair.master.take_writer().map_err(|e| e.to_string())?;
+    pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
+
+    state.masters.lock().unwrap().insert(id, pair.master);
+    state.writers.lock().unwrap().insert(id, writer);
+    Ok(())
 }
 
 #[tauri::command]
-pub async fn list_directory(path: String) -> Result<Vec<FileNode>, String> {
-    let mut nodes = Vec::new();
-    let entries = fs::read_dir(&path).map_err(|e| e.to_string())?;
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let name = path.file_name().unwrap().to_string_lossy().to_string();
-        if !name.starts_with('.') {
-            nodes.push(FileNode { name, path: path.to_string_lossy().to_string(), is_dir: path.is_dir() });
-        }
+pub async fn write_to_pty(id: u32, data: String, state: State<'_, PtyState>) -> Result<(), String> {
+    let mut writers = state.writers.lock().unwrap();
+    if let Some(writer) = writers.get_mut(&id) {
+        writer.write_all(data.as_bytes()).map_err(|e| e.to_string())?;
+        writer.flush().map_err(|e| e.to_string())?;
     }
-    nodes.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then(a.name.cmp(&b.name)));
-    Ok(nodes)
-}
-
-#[tauri::command]
-pub async fn read_file(path: String) -> Result<String, String> {
-    fs::read_to_string(&path).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn get_default_workspace(app: AppHandle) -> Result<String, String> {
-    let path = app.path().app_local_data_dir().map_err(|e| e.to_string())?.join("zenith_workspace");
-    Ok(path.to_string_lossy().to_string())
-}
-
-#[tauri::command]
-pub async fn get_compiler_path(app: AppHandle, lang: String) -> Result<String, String> {
-    let exe_dir = app.path().resource_dir().map_err(|e| e.to_string())?;
-    
-    if lang == "c" {
-        let mingw_gcc = exe_dir.join("bin/mingw/bin/gcc.exe");
-        if mingw_gcc.exists() {
-            return Ok(mingw_gcc.to_string_lossy().to_string());
-        }
-        if cfg!(target_os = "windows") {
-            return Err("MinGW (gcc) not found. Please reinstall ZenithIDE.".to_string());
-        }
-        return Ok("gcc".to_string());
-    }
-    
-    if lang == "cpp" {
-        let mingw_gpp = exe_dir.join("bin/mingw/bin/g++.exe");
-        if mingw_gpp.exists() {
-            return Ok(mingw_gpp.to_string_lossy().to_string());
-        }
-        if cfg!(target_os = "windows") {
-            return Err("MinGW (g++) not found. Please reinstall ZenithIDE.".to_string());
-        }
-        return Ok("g++".to_string());
-    }
-    
-    if lang == "rust" {
-        return Ok("rustc".to_string());
-    }
-    
-    Err("Unsupported language".to_string())
+    Ok(())
 }
