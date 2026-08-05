@@ -83,7 +83,9 @@ pub async fn get_compiler_path(app: AppHandle, lang: String) -> Result<String, S
 pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String> {
     if lang == "c" || lang == "cpp" {
         if !cfg!(target_os = "windows") {
-            return Err("On Linux/Mac, please install gcc/g++ using your package manager (e.g. sudo apt install gcc g++).".to_string());
+            return Err(
+                "On Linux/Mac, please install gcc/g++ using your package manager.".to_string(),
+            );
         }
 
         let local_dir = app.path().app_local_data_dir().map_err(|e| e.to_string())?;
@@ -95,7 +97,8 @@ pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String
         let _ = app.emit("compiler-status", "Downloading C/C++...");
         let res = reqwest::get(url).await.map_err(|e| e.to_string())?;
         let total = res.content_length().unwrap_or(1);
-        let mut file = fs::File::create(target_dir.join("compiler.zip")).map_err(|e| e.to_string())?;
+        let mut file =
+            fs::File::create(target_dir.join("compiler.zip")).map_err(|e| e.to_string())?;
 
         let mut downloaded: u64 = 0;
         let mut stream = res.bytes_stream();
@@ -109,7 +112,8 @@ pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String
         drop(file);
 
         let _ = app.emit("compiler-status", "Extracting C/C++...");
-        let zip_file = fs::File::open(target_dir.join("compiler.zip")).map_err(|e| e.to_string())?;
+        let zip_file =
+            fs::File::open(target_dir.join("compiler.zip")).map_err(|e| e.to_string())?;
         let mut archive = zip::ZipArchive::new(zip_file).map_err(|e| e.to_string())?;
 
         for i in 0..archive.len() {
@@ -151,7 +155,10 @@ pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String
             }
         } else {
             let status = std::process::Command::new("sh")
-                .args(["-c", "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"])
+                .args([
+                    "-c",
+                    "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
+                ])
                 .status()
                 .map_err(|e| e.to_string())?;
             if !status.success() {
