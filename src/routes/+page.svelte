@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
+  import { listen } from '@tauri-apps/api/event';
   import ActivityBar from '$lib/components/ActivityBar.svelte';
   import Sidebar from '$lib/components/Sidebar.svelte';
   import EditorArea from '$lib/components/EditorArea.svelte';
@@ -14,9 +15,15 @@
   let showTerminal = true;
   let showAI = false;
   let workspacePath = './';
-  let currentLang: string; lang.subscribe(v => currentLang = v);
+  
+  let currentLang: 'en' | 'vi' = 'en';
+  lang.subscribe((v: 'en' | 'vi') => currentLang = v);
 
-  const dict = {
+  let isInstalling = false;
+  let installStatus = '';
+  let installProgress = 0;
+
+  const dict: Record<string, { terminal: string; run: string }> = {
     en: { terminal: 'Terminal', run: 'Run' },
     vi: { terminal: 'Terminal', run: 'Chạy' }
   };
@@ -24,7 +31,19 @@
 
   onMount(async () => { 
     workspacePath = await invoke('get_default_workspace'); 
+    await listen('compiler-status', (e) => installStatus = e.payload as string);
+    await listen('compiler-progress', (e) => installProgress = e.payload as number);
   });
+
+  async function setupCompiler(lang: string) {
+    isInstalling = true;
+    try {
+      await invoke('install_compiler', { lang });
+    } catch (e) {
+      installStatus = `Error: ${e}`;
+    }
+    isInstalling = false;
+  }
 
   async function runCode() {
     showTerminal = true;
@@ -54,11 +73,14 @@
       } else {
         cmd = `echo "Unsupported file type for compilation."\n`;
       }
-    } catch (e) {
-      cmd = `echo "Compiler not found: ${e}"\n`;
+    } catch (e: any) {
+      if (String(e).includes("Not Installed")) {
+        cmd = `echo "Compiler not found. Please click the Setup button."\n`;
+      } else {
+        cmd = `echo "Compiler not found: ${e}"\n`;
+      }
     }
 
-    // Gửi lệnh build vào terminal ảo
     invoke('write_to_pty', { id: 1, data: cmd });
   }
 </script>
@@ -80,9 +102,15 @@
   <div class="flex-1 flex flex-col">
     <div class="flex-1 flex overflow-hidden">
       <div class="flex-1 flex flex-col">
-        <!-- Editor Toolbar -->
         <div class="h-9 bg-[#252526] flex items-center px-2 border-b border-black/40 justify-between">
-          <div></div>
+          <div class="flex items-center gap-2 text-xs text-gray-400">
+            {#if isInstalling}
+              <span class="text-blue-400">{installStatus} {installProgress > 0 && installProgress < 100 ? `${installProgress}%` : ''}</span>
+            {:else}
+              <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded" on:click={() => setupCompiler('c')}>Setup C/C++</button>
+              <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded" on:click={() => setupCompiler('rust')}>Setup Rust</button>
+            {/if}
+          </div>
           <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1 text-xs rounded" on:click={runCode}>
             <Icon name="run" size={12} /> {t.run}
           </button>
