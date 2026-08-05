@@ -28,20 +28,27 @@
 
   function closeTab(path: string) {
     openTabs.update(tabs => {
-      const idx = tabs.findIndex(t => t.path === path); tabs.splice(idx, 1);
+      const idx = tabs.findIndex(t => t.path === path); 
+      tabs.splice(idx, 1);
       if ($activeTabPath === path) activeTabPath.set(tabs.length > 0 ? tabs[Math.max(0, idx - 1)].path : null);
       return tabs;
     });
   }
+  
   onDestroy(() => editorInstance?.dispose());
 </script>
+
 <div class="flex flex-col h-full bg-[#1e1e1e]">
   <div class="h-9 flex items-center bg-[#252526] border-b border-black/40 overflow-x-auto">
     {#each $openTabs as tab (tab.path)}
-      <div class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" on:click={() => activeTabPath.set(tab.path)}>
+      <!-- Đổi div thành button để fix lỗi A11y -->
+      <button 
+        class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" 
+        on:click={() => activeTabPath.set(tab.path)}
+      >
         <Icon name="file" size={14} /><span>{tab.name}</span>
-        <button class="hover:bg-white/20 rounded p-0.5" on:click|stopPropagation={() => closeTab(tab.path)}><Icon name="close" size={12} /></button>
-      </div>
+        <span class="hover:bg-white/20 rounded p-0.5" on:click|stopPropagation={() => closeTab(tab.path)}><Icon name="close" size={12} /></span>
+      </button>
     {/each}
   </div>
   <div class="flex-1" bind:this={editorContainer}></div>
