@@ -1,18 +1,28 @@
-use portable_pty::{native_pty_system, CommandBuilder, PtySize};
-use tauri::{AppHandle, Emitter, State};
 use crate::state::PtyState;
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use std::io::Write;
+use tauri::{AppHandle, Emitter, State};
 
 #[tauri::command]
-pub async fn start_pty(app: AppHandle, id: u32, cwd: String, state: State<'_, PtyState>) -> Result<(), String> {
+pub async fn start_pty(
+    app: AppHandle,
+    id: u32,
+    cwd: String,
+    state: State<'_, PtyState>,
+) -> Result<(), String> {
     let pty_system = native_pty_system();
-    let pair = pty_system.openpty(PtySize {
-        rows: 24, cols: 80, pixel_width: 0, pixel_height: 0,
-    }).map_err(|e| e.to_string())?;
+    let pair = pty_system
+        .openpty(PtySize {
+            rows: 24,
+            cols: 80,
+            pixel_width: 0,
+            pixel_height: 0,
+        })
+        .map_err(|e| e.to_string())?;
 
     let mut reader = pair.master.try_clone_reader().map_err(|e| e.to_string())?;
     let app_handle = app.clone();
-    
+
     std::thread::spawn(move || {
         let mut buf = [0u8; 8192];
         loop {
@@ -46,7 +56,9 @@ pub async fn start_pty(app: AppHandle, id: u32, cwd: String, state: State<'_, Pt
 pub async fn write_to_pty(id: u32, data: String, state: State<'_, PtyState>) -> Result<(), String> {
     let mut writers = state.writers.lock().unwrap();
     if let Some(writer) = writers.get_mut(&id) {
-        writer.write_all(data.as_bytes()).map_err(|e| e.to_string())?;
+        writer
+            .write_all(data.as_bytes())
+            .map_err(|e| e.to_string())?;
         writer.flush().map_err(|e| e.to_string())?;
     }
     Ok(())
