@@ -1,36 +1,19 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ZenithIDE",
-  "version": "0.1.0",
-  "identifier": "com.zenith.ide",
-  "build": {
-    "frontendDist": "../build",
-    "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
-  },
-  "app": {
-    "withGlobalTauri": false,
-    "windows": [
-      {
-        "title": "ZenithIDE",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600
-      }
-    ],
-    "security": { "csp": null }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "resources": [
-      "bin/mingw/**/*"
-    ],
-    "icon": [
-      "icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png",
-      "icons/icon.icns", "icons/icon.ico"
-    ]
-  }
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:webview:default",
+    "core:app:default",
+    "core:event:default",
+    "core:image:default",
+    "core:resources:default",
+    "core:menu:default",
+    "core:tray:default"
+  ]
 }
