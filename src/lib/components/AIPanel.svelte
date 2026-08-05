@@ -3,9 +3,18 @@
   import Icon from './icons.svelte';
   import { lang } from '../i18n';
 
-  let apiKey = ''; let prompt = ''; let response = ''; let loading = false;
-  let currentLang: string; lang.subscribe(v => currentLang = v);
-  const dict = { en: { ask: 'Ask AI', placeholder: 'Ask AI anything about code...' }, vi: { ask: 'Hỏi AI', placeholder: 'Hỏi AI về code...' } };
+  let apiKey = ''; 
+  let prompt = ''; 
+  let response = ''; 
+  let loading = false;
+  
+  let currentLang: 'en' | 'vi' = 'en';
+  lang.subscribe((v: 'en' | 'vi') => currentLang = v);
+  
+  const dict: Record<string, { ask: string; placeholder: string }> = { 
+    en: { ask: 'Ask AI', placeholder: 'Ask AI anything about code...' }, 
+    vi: { ask: 'Hỏi AI', placeholder: 'Hỏi AI về code...' } 
+  };
   $: t = dict[currentLang] || dict.en;
 
   async function ask() {
@@ -17,10 +26,13 @@
         apiKey: apiKey, model: 'gpt-3.5-turbo', prompt: prompt
       });
       response = res;
-    } catch (e) { response = `Error: ${e}`; }
+    } catch (e) { 
+      response = `Error: ${e}`; 
+    }
     loading = false;
   }
 </script>
+
 <div class="h-full flex flex-col bg-[#252526] border-l border-black/40">
   <div class="h-9 flex items-center px-3 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold border-b border-black/40 flex items-center gap-2">
     <Icon name="ai" size={14} /> {t.ask}
