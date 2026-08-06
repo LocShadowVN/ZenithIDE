@@ -5,6 +5,10 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
+# CẤP QUYỀN GHI ĐỂ TẠO RELEASE
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -26,23 +30,19 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: '20' }
         
-      # 1. CÀI THƯ VIỆN TRƯỚC ĐỂ CÓ @tauri-apps/cli
       - name: Install frontend dependencies
         run: npm install
 
-      # 2. SAU ĐÓ MỚI TẠO ICON
       - name: Generate 'Z' Icon
         run: |
           pip install Pillow
           python3 -c "
-          from PIL import Image, ImageDraw, ImageFont
+          from PIL import Image, ImageDraw
           img = Image.new('RGBA', (1024, 1024), (30, 30, 30, 255))
           draw = ImageDraw.Draw(img)
-          try:
-              font = ImageFont.truetype('arial.ttf', 700)
-          except:
-              font = ImageFont.load_default()
-          draw.text((180, 100), 'Z', fill=(255, 255, 255, 255), font=font)
+          draw.line([(200, 200), (800, 200)], fill=(255, 255, 255, 255), width=80)
+          draw.line([(800, 200), (200, 800)], fill=(255, 255, 255, 255), width=80)
+          draw.line([(200, 800), (800, 800)], fill=(255, 255, 255, 255), width=80)
           img.save('app-icon.png')
           "
           npm run tauri icon app-icon.png
