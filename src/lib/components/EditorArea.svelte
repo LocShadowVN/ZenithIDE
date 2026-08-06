@@ -58,7 +58,7 @@
       {#each $openTabs as tab (tab.path)}
         <button class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" on:click={() => activeTabPath.set(tab.path)}>
           <Icon name="file" size={14} /><span>{tab.name}</span>
-          <span class="hover:bg-white/20 rounded p-0.5" on:click|stopPropagation={() => closeTab(tab.path)}><Icon name="close" size={12} /></span>
+          <button class="hover:bg-white/20 rounded p-0.5" on:click|stopPropagation={() => closeTab(tab.path)}><Icon name="close" size={12} /></button>
         </button>
       {/each}
     </div>
