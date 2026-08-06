@@ -52,6 +52,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::fs::list_directory,
             commands::fs::read_file,
+            commands::fs::save_file,
+            commands::fs::create_new_file,
+            commands::fs::create_new_folder,
             commands::fs::get_default_workspace,
             commands::fs::get_compiler_path,
             commands::fs::install_compiler,
