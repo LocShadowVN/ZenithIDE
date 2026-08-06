@@ -46,7 +46,8 @@ pub fn run() {
     tauri::Builder::default()
         .manage(PtyState::new())
         .setup(|app| {
-            init_workspace(&app.handle());
+            // SỬA LỖI Ở ĐÂY: Bỏ dấu & đi
+            init_workspace(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
