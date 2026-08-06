@@ -5,7 +5,7 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
-# CẤP QUYỀN GHI ĐỂ TẠO RELEASE
+# Cấp quyền ghi để tạo Release và đẩy file cài đặt lên
 permissions:
   contents: write
 
@@ -63,7 +63,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: zenithide-v__VERSION__
+          # Đổi tên tag cho khớp với tag bạn đẩy lên GitHub
+          tagName: v__VERSION__
           releaseName: 'ZenithIDE v__VERSION__'
           releaseBody: 'Optimized build with VS Code-like UI.'
           releaseDraft: false
