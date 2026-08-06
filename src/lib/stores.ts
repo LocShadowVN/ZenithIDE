@@ -6,3 +6,4 @@ export interface FileTab {
 
 export const openTabs = writable<FileTab[]>([]);
 export const activeTabPath = writable<string | null>(null);
+export const cursorPos = writable({ line: 1, col: 1 });
