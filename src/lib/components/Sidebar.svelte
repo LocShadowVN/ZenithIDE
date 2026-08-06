@@ -5,10 +5,8 @@
   import { lang } from '../i18n';
 
   interface FileNode { name: string; path: string; is_dir: boolean; }
-  
-  // Đổi tên prop cho khớp với +page.svelte
   export let workspacePath: string;
-  
+  export let refreshKey: number;
   let nodes: FileNode[] = [];
   let currentLang: 'en' | 'vi' = 'en';
   lang.subscribe((v: 'en' | 'vi') => currentLang = v);
@@ -16,8 +14,7 @@
   async function loadDir(path: string) { 
     nodes = await invoke<FileNode[]>('list_directory', { path }); 
   }
-  
-  $: if (workspacePath) loadDir(workspacePath);
+  $: if (workspacePath && refreshKey) loadDir(workspacePath);
 
   async function openFile(node: FileNode) {
     const content = await invoke<string>('read_file', { path: node.path });
@@ -25,17 +22,28 @@
     const ext = node.path.substring(node.path.lastIndexOf('.'));
     const language = langMap[ext] || 'plaintext';
     
-    openTabs.update(tabs => { 
-      if (!tabs.find(t => t.path === node.path)) tabs.push({ ...node, content, language }); 
-      return tabs; 
-    });
+    openTabs.update(tabs => { if (!tabs.find(t => t.path === node.path)) tabs.push({ ...node, content, language }); return tabs; });
     activeTabPath.set(node.path);
   }
-</script>
 
+  async function newFile() {
+    const path = await invoke<string>('create_new_file', { lang: 'txt' });
+    loadDir(workspacePath);
+    openFile({ name: path.split(/[\\/]/).pop() || 'untitled.txt', path, is_dir: false });
+  }
+
+  async function newFolder() {
+    await invoke<string>('create_new_folder', { name: `new_folder_${Date.now()}` });
+    loadDir(workspacePath);
+  }
+</script>
 <aside class="w-60 bg-[#252526] flex flex-col border-r border-black/40">
   <div class="h-9 flex items-center justify-between px-4 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold">
     {currentLang === 'vi' ? 'Trình duyệt' : 'Explorer'}
+    <div class="flex gap-2">
+      <button class="hover:text-white" on:click={newFile} title="New File"><Icon name="new-file" size={14} /></button>
+      <button class="hover:text-white" on:click={newFolder} title="New Folder"><Icon name="new-folder" size={14} /></button>
+    </div>
   </div>
   <div class="flex-1 overflow-y-auto py-1">
     {#each nodes as node}
