@@ -37,6 +37,60 @@ pub async fn read_file(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub async fn save_file(path: String, content: String) -> Result<(), String> {
+    fs::write(&path, content).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn create_new_file(app: AppHandle, lang: String) -> Result<String, String> {
+    let path = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("zenith_workspace");
+    let _ = fs::create_dir_all(&path);
+
+    let ext = match lang.as_str() {
+        "c" => "c",
+        "cpp" => "cpp",
+        "rust" => "rs",
+        "html" => "html",
+        _ => "txt",
+    };
+
+    let mut file_name = format!("untitled.{}", ext);
+    let mut count = 1;
+    while path.join(&file_name).exists() {
+        file_name = format!("untitled_{}.{}", count, ext);
+        count += 1;
+    }
+
+    let file_path = path.join(&file_name);
+    let default_content = match lang.as_str() {
+        "c" => "#include <stdio.h>\n\nint main() {\n    \n    return 0;\n}",
+        "cpp" => "#include <iostream>\n\nint main() {\n    \n    return 0;\n}",
+        "rust" => "fn main() {\n    \n}",
+        "html" => "<!DOCTYPE html>\n<html>\n<head>\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>",
+        _ => "",
+    };
+
+    fs::write(&file_path, default_content).map_err(|e| e.to_string())?;
+    Ok(file_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn create_new_folder(app: AppHandle, name: String) -> Result<String, String> {
+    let path = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("zenith_workspace")
+        .join(&name);
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
 pub async fn get_default_workspace(app: AppHandle) -> Result<String, String> {
     let path = app
         .path()
