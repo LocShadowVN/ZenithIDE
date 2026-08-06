@@ -26,18 +26,11 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: '20' }
         
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
-          
-      - name: Install Linux deps
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      # 1. CÀI THƯ VIỆN TRƯỚC ĐỂ CÓ @tauri-apps/cli
+      - name: Install frontend dependencies
+        run: npm install
 
-      # BƯỚC MỚI: TỰ ĐỘNG VẼ CHỮ Z VÀ TẠO ICON
+      # 2. SAU ĐÓ MỚI TẠO ICON
       - name: Generate 'Z' Icon
         run: |
           pip install Pillow
@@ -52,11 +45,19 @@ jobs:
           draw.text((180, 100), 'Z', fill=(255, 255, 255, 255), font=font)
           img.save('app-icon.png')
           "
-          npx @tauri-apps/cli icon app-icon.png
+          npm run tauri icon app-icon.png
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
           
-      - name: Install frontend dependencies
-        run: npm install
-        
+      - name: Install Linux deps
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          
       - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -64,7 +65,7 @@ jobs:
         with:
           tagName: zenithide-v__VERSION__
           releaseName: 'ZenithIDE v__VERSION__'
-          releaseBody: 'Lightweight setup. Compilers can be downloaded directly inside the app.'
+          releaseBody: 'Optimized build with VS Code-like UI.'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
