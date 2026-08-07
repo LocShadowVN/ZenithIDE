@@ -8,6 +8,7 @@
   import Terminal from '$lib/components/Terminal.svelte';
   import AIPanel from '$lib/components/AIPanel.svelte';
   import WelcomeScreen from '$lib/components/WelcomeScreen.svelte';
+  import SettingsPanel from '$lib/components/SettingsPanel.svelte';
   import StatusBar from '$lib/components/StatusBar.svelte';
   import Icon from '$lib/components/icons.svelte';
   import { lang } from '$lib/i18n';
@@ -83,14 +84,11 @@
 {:else}
   <main class="flex h-screen w-screen overflow-hidden">
     <ActivityBar bind:activeTab={activeView} setActive={(v) => activeView = v} />
-    <div class="absolute top-1 right-40 z-50 flex items-center gap-2">
-      <select bind:value={$lang} class="bg-[#3c3c3c] text-white text-xs px-1 py-0.5 border border-black/50 focus:outline-none">
-        <option value="en">EN</option><option value="vi">VI</option>
-      </select>
-    </div>
-
+    
     {#if activeView === 'files'}
       <Sidebar {workspacePath} refreshKey={sidebarRefreshKey} />
+    {:else if activeView === 'settings'}
+      <SettingsPanel />
     {/if}
 
     <div class="flex-1 flex flex-col">
@@ -101,11 +99,11 @@
               {#if isInstalling}
                 <span class="text-blue-400">{installStatus} {installProgress > 0 && installProgress < 100 ? `${installProgress}%` : ''}</span>
               {:else}
-                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded" on:click={() => setupCompiler('c')}>Setup C/C++</button>
-                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded" on:click={() => setupCompiler('rust')}>Setup Rust</button>
+                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('c')}>Setup C/C++</button>
+                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('rust')}>Setup Rust</button>
               {/if}
             </div>
-            <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1 text-xs rounded" on:click={runCode}>
+            <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1 text-xs rounded transition-colors" on:click={runCode}>
               <Icon name="run" size={12} /> {t.run}
             </button>
           </div>
