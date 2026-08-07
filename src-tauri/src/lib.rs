@@ -10,14 +10,12 @@ fn init_workspace(app: &tauri::AppHandle) {
         .app_local_data_dir()
         .expect("Failed to get local data dir")
         .join("zenith_workspace");
-    // Chỉ tạo thư mục rỗng, không tạo file
     let _ = std::fs::create_dir_all(&path);
 }
 
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_shell::init())
         .manage(PtyState::new())
         .setup(|app| {
             init_workspace(app.handle());
