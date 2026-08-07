@@ -224,3 +224,8 @@ pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String
     let _ = app.emit("compiler-status", "Done");
     Ok(())
 }
+
+#[tauri::command]
+pub async fn get_app_version(app: AppHandle) -> Result<String, String> {
+    Ok(app.package_info().version.to_string())
+}
