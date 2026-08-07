@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --bg-editor: #1a1b1e; 
-  --bg-sidebar: #1e1f22; 
-  --bg-activity: #2b2c30;
-  --bg-titlebar: #1e1f22;
+  --bg-editor: #1e1e1e; 
+  --bg-sidebar: #252526; 
+  --bg-activity: #333333;
+  --bg-titlebar: #3c3c3c;
   --text-main: #d4d4d4; 
   --text-muted: #8a8a8a;
   --border-color: #2d2d2d; 
@@ -21,26 +21,21 @@ html, body {
   font-size: 13px;
 }
 
-/* Hiệu ứng cuộn mượt mà */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #3c3c3c; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #505050; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* Lớp kính mờ (Glassmorphism) */
-.glass-panel {
-  background: rgba(30, 31, 34, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+/* Bỏ glass-panel (kính mờ) gây lag, đổi thành nền đặc */
+.solid-panel {
+  background: #1e1e1e;
+  border: 1px solid #2d2d2d;
 }
 
-/* Nút bấm hiện đại */
 .modern-btn {
   background: linear-gradient(180deg, #007acc, #0064b3);
-  box-shadow: 0 4px 15px rgba(0, 122, 204, 0.3);
   transition: all 0.2s ease;
 }
 .modern-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 122, 204, 0.5);
+  background: linear-gradient(180deg, #1f8ad2, #007acc);
 }
