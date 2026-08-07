@@ -2,7 +2,6 @@
   import { invoke } from '@tauri-apps/api/core';
   import { listen } from '@tauri-apps/api/event';
   import { openTabs, activeTabPath } from '../stores';
-  export let enterIDE: () => void;
   
   let step = 'main'; 
   let selectedLang = ''; 
@@ -38,7 +37,6 @@
       const name = path.split(/[\\/]/).pop() || 'untitled';
       openTabs.update(tabs => { if (!tabs.find(t => t.path === path)) tabs.push({ path, name, content, language: selectedLang }); return tabs; });
       activeTabPath.set(path);
-      enterIDE();
     } catch (e) { console.error(e); }
   }
 
@@ -46,52 +44,57 @@
   listen('compiler-progress', (e) => installProgress = e.payload as number);
 </script>
 
-<div class="w-full h-full flex flex-col items-center justify-center bg-[#1e1e1e] text-[#d4d4d4] relative overflow-hidden">
-  <div class="z-10 flex flex-col items-center w-full max-w-md p-8 solid-panel rounded-2xl shadow-2xl">
+<div class="w-full h-full flex bg-[#1e1e1e] text-[#cccccc]">
+  <!-- Cột trái: Các nút bấm -->
+  <div class="flex-1 p-12 overflow-y-auto">
+    <h1 class="text-5xl font-extralight mb-2 text-white">ZenithIDE</h1>
+    <p class="text-sm text-[#888] mb-12">Editing evolved</p>
+    
     {#if step === 'main'}
-      <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-bold text-white mb-6 shadow-lg">Z</div>
-      <h1 class="text-3xl font-bold text-white mb-2 tracking-wide">ZenithIDE</h1>
-      <p class="text-sm text-gray-400 mb-10">Code at the speed of thought.</p>
-      
-      <div class="flex flex-col gap-3 w-full">
-        <button class="modern-btn text-white py-3 rounded-lg font-semibold" on:click={() => step = 'select_lang'}>New File</button>
-        <button class="bg-white/5 hover:bg-white/10 text-white py-3 rounded-lg font-semibold transition-all" on:click={enterIDE}>Open Workspace</button>
+      <h2 class="text-sm font-semibold uppercase text-[#888] mb-4">Start</h2>
+      <div class="flex flex-col gap-3 text-sm">
+        <button class="text-[#3794ff] hover:underline text-left w-fit" on:click={() => step = 'select_lang'}>New File...</button>
       </div>
     {:else if step === 'select_lang'}
-      <h2 class="text-xl font-bold text-white mb-6">Select Language</h2>
-      <div class="grid grid-cols-2 gap-3 w-full">
+      <h2 class="text-sm font-semibold uppercase text-[#888] mb-4">Select Language</h2>
+      <div class="flex flex-wrap gap-4">
         {#each Object.entries(langMap) as [lang, info]}
-          <button class="bg-white/5 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/50 text-white py-6 rounded-xl font-medium transition-all flex flex-col items-center gap-2" on:click={() => checkCompiler(lang)}>
-            <span class="text-2xl font-mono text-blue-400">{info.icon}</span>
-            {info.name}
+          <button class="w-32 h-32 bg-[#252526] hover:bg-[#2d2d2d] border border-transparent hover:border-[#3794ff] text-white rounded-lg flex flex-col items-center justify-center gap-2 transition-all" on:click={() => checkCompiler(lang)}>
+            <span class="text-3xl font-mono text-[#3794ff]">{info.icon}</span>
+            <span class="text-sm">{info.name}</span>
           </button>
         {/each}
       </div>
-      <button class="mt-8 text-sm text-gray-400 hover:text-white transition" on:click={() => step = 'main'}>← Back</button>
+      <button class="mt-8 text-sm text-[#888] hover:text-white" on:click={() => step = 'main'}>← Back</button>
     {:else if step === 'setup_compiler'}
-      <h2 class="text-xl font-bold text-white mb-6">Setup {langMap[selectedLang].name}</h2>
-      
+      <h2 class="text-sm font-semibold uppercase text-[#888] mb-4">Setup {langMap[selectedLang].name}</h2>
       {#if isInstalling}
-        <div class="w-full flex flex-col items-center gap-4 py-4">
-          <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-300" style="width: {installProgress}%"></div>
+        <div class="w-80 flex flex-col gap-3">
+          <div class="w-full bg-[#3c3c3c] h-1 rounded-full overflow-hidden">
+            <div class="bg-[#3794ff] h-full transition-all" style="width: {installProgress}%"></div>
           </div>
-          <p class="text-sm text-blue-300">{installStatus} {installProgress > 0 && installProgress < 100 ? `${installProgress}%` : ''}</p>
+          <p class="text-sm text-[#888]">{installStatus} {installProgress > 0 && installProgress < 100 ? `${installProgress}%` : ''}</p>
         </div>
       {:else if isInstalled}
-        <div class="flex flex-col items-center gap-6 py-4">
-          <div class="w-16 h-16 flex items-center justify-center rounded-full bg-green-500/20 text-green-400 text-3xl">✓</div>
-          <p class="text-white text-lg">{selectedLang === 'html' ? 'No compiler needed.' : 'Compiler is ready!'}</p>
-          <button class="modern-btn text-white px-8 py-3 rounded-lg font-semibold w-full" on:click={createAndOpenFile}>Create & Open File</button>
-        </div>
+        <p class="text-green-400 mb-6 text-sm">{selectedLang === 'html' ? 'No compiler needed.' : 'Compiler is ready!'}</p>
+        <button class="bg-[#0e639c] hover:bg-[#1177bb] text-white px-4 py-2 rounded text-sm w-fit" on:click={createAndOpenFile}>Create & Open File</button>
       {:else}
-        <div class="flex flex-col items-center gap-6 py-4 text-center">
-          <p class="text-gray-400 max-w-xs">Compiler not found. Please download it to compile and run code.</p>
-          <button class="modern-btn text-white px-8 py-3 rounded-lg font-semibold w-full" on:click={setupCompiler}>Download {langMap[selectedLang].name} Compiler</button>
-          <button class="text-sm text-gray-400 hover:text-white transition" on:click={createAndOpenFile}>Skip & Create File</button>
-        </div>
+        <p class="text-[#888] mb-6 max-w-sm text-sm">Compiler not found. Please download it to compile and run code.</p>
+        <button class="bg-[#0e639c] hover:bg-[#1177bb] text-white px-4 py-2 rounded text-sm w-fit mb-3" on:click={setupCompiler}>Download {langMap[selectedLang].name} Compiler</button>
+        <button class="text-[#3794ff] hover:underline text-sm" on:click={createAndOpenFile}>Skip & Create File</button>
       {/if}
-      <button class="mt-8 text-sm text-gray-400 hover:text-white transition" on:click={() => step = 'select_lang'}>← Back</button>
+      <button class="mt-8 text-sm text-[#888] hover:text-white" on:click={() => step = 'select_lang'}>← Back</button>
     {/if}
+  </div>
+
+  <!-- Cột phải: Logo và thông tin -->
+  <div class="w-1/3 flex flex-col items-center justify-center bg-[#252526] border-l border-black/40 p-10">
+    <!-- Logo Z -->
+    <svg width="120" height="120" viewBox="0 0 100 100" class="mb-6">
+      <rect width="100" height="100" rx="20" fill="#1e1e1e" stroke="#3c3c3c" stroke-width="2"/>
+      <path d="M30 30 H70 L35 70 H70" stroke="#3794ff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h2 class="text-xl font-light text-white mb-2">ZenithIDE</h2>
+    <p class="text-xs text-[#888] text-center">Powered by Rust & SvelteKit</p>
   </div>
 </div>
