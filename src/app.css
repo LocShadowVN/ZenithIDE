@@ -3,17 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --bg-editor: #1e1e1e; --bg-sidebar: #252526; --bg-activity: #333333;
-  --bg-titlebar: #3c3c3c; --text-main: #cccccc; --text-muted: #858585;
-  --border-color: #2d2d2d; --accent-blue: #007acc;
+  --bg-editor: #1a1b1e; 
+  --bg-sidebar: #1e1f22; 
+  --bg-activity: #2b2c30;
+  --bg-titlebar: #1e1f22;
+  --text-main: #d4d4d4; 
+  --text-muted: #8a8a8a;
+  --border-color: #2d2d2d; 
+  --accent-blue: #007acc;
 }
+
 * { box-sizing: border-box; }
 html, body { 
   margin: 0; padding: 0; height: 100vh; overflow: hidden;
   background-color: var(--bg-editor); color: var(--text-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   font-size: 13px;
 }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #424242; }
+
+/* Hiệu ứng cuộn mượt mà */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #3c3c3c; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #505050; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* Lớp kính mờ (Glassmorphism) */
+.glass-panel {
+  background: rgba(30, 31, 34, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Nút bấm hiện đại */
+.modern-btn {
+  background: linear-gradient(180deg, #007acc, #0064b3);
+  box-shadow: 0 4px 15px rgba(0, 122, 204, 0.3);
+  transition: all 0.2s ease;
+}
+.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 122, 204, 0.5);
+}
