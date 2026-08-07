@@ -7,7 +7,6 @@
   let prompt = ''; 
   let response = ''; 
   let loading = false;
-  
   let currentLang: 'en' | 'vi' = 'en';
   lang.subscribe((v: 'en' | 'vi') => currentLang = v);
   
@@ -19,11 +18,14 @@
 
   async function ask() {
     if (!apiKey || !prompt) return;
-    loading = true; response = '';
+    loading = true; 
+    response = '';
     try {
       const res = await invoke<string>('ask_ai', {
         apiUrl: 'https://api.openai.com/v1/chat/completions',
-        apiKey: apiKey, model: 'gpt-3.5-turbo', prompt: prompt
+        apiKey: apiKey,
+        model: 'gpt-3.5-turbo',
+        prompt: prompt
       });
       response = res;
     } catch (e) { 
@@ -33,18 +35,52 @@
   }
 </script>
 
-<div class="h-full flex flex-col bg-[#252526] border-l border-black/40">
-  <div class="h-9 flex items-center px-3 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold border-b border-black/40 flex items-center gap-2">
+<div class="h-full flex flex-col bg-[#1e1e1e] border-l border-black/40">
+  <!-- Header -->
+  <div class="h-10 flex items-center px-3 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold border-b border-black/40 bg-[#252526] gap-2">
     <Icon name="ai" size={14} /> {t.ask}
   </div>
-  <div class="p-2 border-b border-black/40">
-    <input type="password" bind:value={apiKey} placeholder="API Key" class="w-full bg-[#1e1e1e] text-white px-2 py-1 text-xs border border-black/50 focus:outline-none focus:border-blue-500" />
+
+  <!-- API Key Input (Collapsible look) -->
+  <div class="p-3 border-b border-black/40 bg-[#252526]">
+    <input 
+      type="password" 
+      bind:value={apiKey} 
+      placeholder="Paste API Key (sk-...)" 
+      class="w-full bg-[#1e1e1e] text-white px-3 py-2 text-xs rounded-md border border-white/10 focus:outline-none focus:border-blue-500 transition-colors" 
+    />
   </div>
-  <div class="flex-1 overflow-y-auto p-2 text-xs text-gray-300 whitespace-pre-wrap">
-    {loading ? 'Thinking...' : response}
+
+  <!-- Chat History Area -->
+  <div class="flex-1 overflow-y-auto p-4 text-sm text-gray-300 whitespace-pre-wrap">
+    {#if loading}
+      <div class="flex items-center gap-2 text-blue-400">
+        <span class="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></span>
+        AI is thinking...
+      </div>
+    {:else if response}
+      {response}
+    {:else}
+      <div class="text-center text-gray-600 mt-10">
+        <Icon name="ai" size={32} />
+        <p class="mt-2 text-xs">Your AI responses will appear here.</p>
+      </div>
+    {/if}
   </div>
-  <div class="p-2 border-t border-black/40">
-    <textarea bind:value={prompt} placeholder={t.placeholder} class="w-full h-20 bg-[#1e1e1e] text-white p-2 text-xs border border-black/50 focus:outline-none focus:border-blue-500 resize-none"></textarea>
-    <button on:click={ask} class="w-full mt-1 bg-blue-600 hover:bg-blue-700 text-white py-1 text-xs font-semibold">{t.ask}</button>
+
+  <!-- Prompt Input Area -->
+  <div class="p-3 border-t border-black/40 bg-[#252526]">
+    <textarea 
+      bind:value={prompt} 
+      placeholder={t.placeholder} 
+      class="w-full h-24 bg-[#1e1e1e] text-white p-3 text-xs rounded-md border border-white/10 focus:outline-none focus:border-blue-500 resize-none transition-colors mb-2"
+    ></textarea>
+    <button 
+      on:click={ask} 
+      class="w-full bg-[#007acc] hover:bg-[#1f8ad2] text-white py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={loading || !apiKey || !prompt}
+    >
+      {#if loading}Waiting...{:else}<Icon name="ai" size={14} /> {t.ask}{/if}
+    </button>
   </div>
 </div>
