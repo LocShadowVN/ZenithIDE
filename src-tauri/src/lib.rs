@@ -10,6 +10,7 @@ fn init_workspace(app: &tauri::AppHandle) {
         .app_local_data_dir()
         .expect("Failed to get local data dir")
         .join("zenith_workspace");
+    // Chỉ tạo thư mục rỗng, không tạo file
     let _ = std::fs::create_dir_all(&path);
 }
 
