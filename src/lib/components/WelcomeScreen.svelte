@@ -46,12 +46,8 @@
   listen('compiler-progress', (e) => installProgress = e.payload as number);
 </script>
 
-<div class="w-full h-full flex flex-col items-center justify-center bg-[#1a1b1e] text-[#d4d4d4] relative overflow-hidden">
-  <!-- Hiệu ứng nền tròn ánh sáng -->
-  <div class="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
-  <div class="absolute bottom-[-10%] right-[20%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[120px]"></div>
-
-  <div class="z-10 flex flex-col items-center w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl">
+<div class="w-full h-full flex flex-col items-center justify-center bg-[#1e1e1e] text-[#d4d4d4] relative overflow-hidden">
+  <div class="z-10 flex flex-col items-center w-full max-w-md p-8 solid-panel rounded-2xl shadow-2xl">
     {#if step === 'main'}
       <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-bold text-white mb-6 shadow-lg">Z</div>
       <h1 class="text-3xl font-bold text-white mb-2 tracking-wide">ZenithIDE</h1>
