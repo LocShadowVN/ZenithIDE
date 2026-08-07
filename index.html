@@ -237,8 +237,9 @@
     <script>
         AOS.init({
             duration: 800,
-            once: true,
-            offset: 100
+            once: false,  // Đổi từ true thành false để chạy vô hạn lần
+            offset: 100,
+            mirror: true  // Thêm dòng này để khi cuộn ngược lên cũng có hiệu ứng
         });
     </script>
 </body>
