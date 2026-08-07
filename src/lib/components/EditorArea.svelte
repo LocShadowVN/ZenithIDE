@@ -15,7 +15,8 @@
     editorInstance = monaco.editor.create(editorContainer, {
       theme: 'vs-dark', automaticLayout: true, fontSize: 14,
       fontFamily: 'Consolas, "Courier New", monospace', minimap: { enabled: true },
-      scrollBeyondLastLine: false, scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 }
+      scrollBeyondLastLine: false, scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
+      padding: { top: 10 }
     });
 
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
@@ -52,18 +53,31 @@
   }
   onDestroy(() => editorInstance?.dispose());
 </script>
+
 <div class="flex flex-col h-full bg-[#1e1e1e]">
-  <div class="h-9 flex items-center bg-[#252526] border-b border-black/40 justify-between">
+  <div class="h-10 flex items-center bg-[#252526] border-b border-black/40 justify-between">
     <div class="h-full flex items-center overflow-x-auto">
+      {#if $openTabs.length === 0}
+        <div class="px-4 text-xs text-gray-600">No file open. Use the sidebar to create one.</div>
+      {/if}
       {#each $openTabs as tab (tab.path)}
-        <button class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" on:click={() => activeTabPath.set(tab.path)}>
-          <Icon name="file" size={14} /><span>{tab.name}</span>
-          <button class="hover:bg-white/20 rounded p-0.5" on:click|stopPropagation={() => closeTab(tab.path)}><Icon name="close" size={12} /></button>
-        </button>
+        <!-- Đổi từ button sang div để fix lỗi vỡ layout -->
+        <div 
+          class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] group {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" 
+          role="button" tabindex="0"
+          on:click={() => activeTabPath.set(tab.path)}
+          on:keydown={(e) => e.key === 'Enter' && activeTabPath.set(tab.path)}
+        >
+          <Icon name="file" size={14} />
+          <span>{tab.name}</span>
+          <button class="hover:bg-white/20 rounded p-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" on:click|stopPropagation={() => closeTab(tab.path)}>
+            <Icon name="close" size={12} />
+          </button>
+        </div>
       {/each}
     </div>
-    <button class="flex items-center gap-1 bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-3 py-1 text-xs rounded mr-2 transition-colors" on:click={saveFile}>
-      {#if isSaving}<span class="text-green-400">Saved!</span>{:else}<Icon name="save" size={14} /> Save{/if}
+    <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1.5 text-xs rounded mr-2 transition-colors disabled:opacity-50" on:click={saveFile} disabled={!$activeTabPath}>
+      {#if isSaving}<span class="text-green-400 flex items-center gap-1"><Icon name="save" size={14}/> Saved!</span>{:else}<Icon name="save" size={14} /> Save{/if}
     </button>
   </div>
   <div class="flex-1" bind:this={editorContainer}></div>
