@@ -56,14 +56,19 @@ jobs:
       # BƯỚC MA THUẬT Ở ĐÂY: Tự động cập nhật version từ Tag GitHub
       - name: Set Version from Tag
         run: |
-          # Lấy tên tag (ví dụ: v0.2.0) và cắt bỏ chữ "v" đi -> 0.2.0
-          VERSION=${GITHUB_REF_NAME#v}
+          # Lấy tên tag/branch, cắt bỏ chữ "v" ở đầu
+          RAW_VERSION=${GITHUB_REF_NAME#v}
+          # Dùng grep để trích xuất đúng 3 chữ số phiên bản (vd: 0.1.0), bỏ qua ký tự thừa
+          VERSION=$(echo "$RAW_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          
+          # Nếu không tìm thấy số phiên bản hợp lệ, gán mặc định 0.0.1 để không bị lỗi build
+          if [ -z "$VERSION" ]; then VERSION="0.0.1"; fi
+          
           echo "Đang set version thành: $VERSION"
           
-          # Dùng Node.js để sửa file package.json và tauri.conf.json an toàn
+          # Sửa file package.json và tauri.conf.json
           node -e "const fs=require('fs'); let p=JSON.parse(fs.readFileSync('package.json')); p.version='$VERSION'; fs.writeFileSync('package.json', JSON.stringify(p, null, 2));"
           node -e "const fs=require('fs'); let p=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json')); p.version='$VERSION'; fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(p, null, 2));"
-          
       - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
