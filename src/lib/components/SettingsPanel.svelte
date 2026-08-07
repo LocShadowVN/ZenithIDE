@@ -43,7 +43,8 @@
       if (update) {
         let downloaded = 0;
         let total = 0;
-        await update.downloadAndInstall((event) => {
+        // THÊM CHỮ : any VÀO ĐÂY
+        await update.downloadAndInstall((event: any) => {
           switch (event.event) {
             case 'Started':
               total = event.data.contentLength || 0;
