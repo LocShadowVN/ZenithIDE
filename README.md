@@ -19,7 +19,7 @@ A lightweight, high-performance Integrated Development Environment built with Ru
 - **Monaco Editor:** Utilizes the same editor engine that powers Visual Studio Code, ensuring familiar syntax highlighting, code completion, and text manipulation behaviors.
 - **Integrated Terminal:** A full-featured pseudo-terminal (PTY) supporting interactive shell commands, build outputs, and standard input/output streams.
 - **Multilingual User Interface:** Supports English and Vietnamese out of the box, with the ability to expand to more languages.
-- **Cross-Platform:** Builds available for Windows (.exe), Linux (.deb, .AppImage), and macOS (.dmg).
+- **Cross-Platform:** Builds available for Windows (.exe) and Linux (.deb, .AppImage).
 
 ## System Requirements
 
@@ -28,7 +28,6 @@ To run ZenithIDE efficiently, your system must meet the following minimum requir
 - **Operating System:**
   - Windows 10 or later (64-bit).
   - Linux: Ubuntu 22.04 or equivalent (requires `libwebkit2gtk-4.1` installed).
-  - macOS: 11.0 Big Sur or later.
 - **RAM:** 2GB minimum (4GB recommended for compiling large Rust or C++ projects).
 - **Storage:** 50MB for the IDE installation. An additional 1GB is required if you choose to download C/C++ and Rust compilers via the in-app downloader.
 - **Network:** An active internet connection is required for downloading compilers and using the AI Assistant features.
@@ -64,9 +63,9 @@ Upon launching, ZenithIDE automatically creates a `zenith_workspace` directory i
 
 ## License
 
-This project is licensed under the Mozilla Public License Version 2.0 (MPL 2.0). 
+This project is licensed under the MIT License. 
 
-You are free to use, modify, and distribute this software. Any modifications to the source code files must be made available under the same MPL 2.0 license. For the full license text, please refer to the `LICENSE` file included in the repository.
+You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of this software without any restrictions, provided the original copyright notice and permission notice are included in all copies or substantial portions of the software. For the full license text, please refer to the `LICENSE` file included in the repository.
 
 ## Acknowledgements
 
