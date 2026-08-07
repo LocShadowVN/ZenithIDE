@@ -70,3 +70,18 @@ You are free to use, copy, modify, merge, publish, distribute, sublicense, and/o
 ## Acknowledgements
 
 The entire codebase, architecture, and CI/CD pipeline of ZenithIDE were entirely generated and engineered by **GLM 5.2** (Zhipu AI), demonstrating advanced capabilities in full-stack development combining Rust, Tauri, and SvelteKit.
+Bạn tinh mắt quá! Đúng là khi dùng thư viện của người khác, đặc biệt là của gã khổng lồ Microsoft, ta phải để ý đến giấy phép (License). 
+
+Tin vui là Monaco Editor được Microsoft phát hành dưới giấy phép **MIT License**, cực kỳ thoải mái. Theo luật của MIT, bạn được dùng tự do, sửa đổi, phân phối, **nhưng bắt buộc phải giữ lại thông báo bản quyền (copyright notice) của họ.**
+
+Vì ZenithIDE dùng npm để tải Monaco về, nên bản quyền của nó tự động nằm trong thư mục `node_modules/monaco-editor/LICENSE`. Tuy nhiên, để cho chuyên nghiệp và rõ ràng nhất với dự án mã nguồn mở, bạn nên thêm một mục nhỏ vào cuối file `README.md` để ghi nhận điều này.
+
+Bạn copy đoạn này dán vào cuối file `README.md` nhé:
+
+## Third-Party Licenses
+
+This project utilizes the following third-party software:
+
+- **Monaco Editor** (Copyright (c) Microsoft Corporation)  
+  Licensed under the MIT License.  
+  The editor powering ZenithIDE's code editing experience.
