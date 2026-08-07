@@ -5,7 +5,6 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
-# Cấp quyền ghi để tạo Release và đẩy file cài đặt lên
 permissions:
   contents: write
 
@@ -15,8 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin --bundles dmg'
           - platform: 'ubuntu-22.04'
             args: '--bundles deb,appimage'
           - platform: 'windows-latest'
@@ -49,21 +46,29 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin' || '' }}
           
       - name: Install Linux deps
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      # BƯỚC MA THUẬT Ở ĐÂY: Tự động cập nhật version từ Tag GitHub
+      - name: Set Version from Tag
+        run: |
+          # Lấy tên tag (ví dụ: v0.2.0) và cắt bỏ chữ "v" đi -> 0.2.0
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Đang set version thành: $VERSION"
+          
+          # Dùng Node.js để sửa file package.json và tauri.conf.json an toàn
+          node -e "const fs=require('fs'); let p=JSON.parse(fs.readFileSync('package.json')); p.version='$VERSION'; fs.writeFileSync('package.json', JSON.stringify(p, null, 2));"
+          node -e "const fs=require('fs'); let p=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json')); p.version='$VERSION'; fs.writeFileSync('src-tauri/tauri.conf.json', JSON.stringify(p, null, 2));"
           
       - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Đổi tên tag cho khớp với tag bạn đẩy lên GitHub
           tagName: v__VERSION__
           releaseName: 'ZenithIDE v__VERSION__'
           releaseBody: 'Optimized build with VS Code-like UI.'
