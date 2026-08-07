@@ -1,15 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
-  import { check } from '@tauri-apps/plugin-updater';
-  import { relaunch } from '@tauri-apps/plugin-process';
+  import { open } from '@tauri-apps/plugin-shell';
   import Icon from './icons.svelte';
 
   let version = '0.0.0';
   let updateStatus = 'Idle';
   let isChecking = false;
   let updateAvailable = false;
-  let updateProgress = 0;
+  let latestVersion = '';
 
   onMount(async () => {
     try {
@@ -23,9 +22,12 @@
     isChecking = true;
     updateStatus = 'Checking...';
     try {
-      const update = await check();
-      if (update) {
-        updateStatus = `Update v${update.version} found!`;
+      const res = await fetch('https://api.github.com/repos/LocShadowVN/ZenithIDE/releases/latest');
+      const data = await res.json();
+      latestVersion = data.tag_name.replace('v', '');
+      
+      if (latestVersion !== version) {
+        updateStatus = `Update v${latestVersion} found!`;
         updateAvailable = true;
       } else {
         updateStatus = 'You are using the latest version.';
@@ -36,98 +38,69 @@
     isChecking = false;
   }
 
-  async function installUpdate() {
-    updateStatus = 'Downloading...';
-    try {
-      const update = await check();
-      if (update) {
-        let downloaded = 0;
-        let total = 0;
-        await update.downloadAndInstall((event: any) => {
-          switch (event.event) {
-            case 'Started':
-              total = event.data.contentLength || 0;
-              break;
-            case 'Progress':
-              downloaded += event.data.chunkLength;
-              updateProgress = Math.round((downloaded / total) * 100);
-              updateStatus = `Downloading... ${updateProgress}%`;
-              break;
-            case 'Finished':
-              updateStatus = 'Installing...';
-              break;
-          }
-        });
-        await relaunch();
-      }
-    } catch (e) {
-      updateStatus = `Error: ${e}`;
-    }
+  async function downloadUpdate() {
+    await open('https://github.com/LocShadowVN/ZenithIDE/releases/latest');
   }
 </script>
 
-<aside class="w-80 bg-[#1e1e1e] flex flex-col border-r border-black/40 overflow-y-auto">
-  <div class="h-10 flex items-center px-4 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold border-b border-black/40 bg-[#252526]">
+<!-- Đổi nền thành #252526 phẳng như VS Code Sidebar -->
+<aside class="w-72 bg-[#252526] flex flex-col border-r border-black/40 overflow-y-auto">
+  <div class="h-9 flex items-center px-4 text-[11px] uppercase tracking-wide text-[#bbbbbb] font-semibold">
     Settings
   </div>
   
-  <div class="p-4 flex flex-col gap-6">
+  <div class="flex-1 flex flex-col">
     
-    <!-- About Section -->
-    <div class="bg-[#252526] p-4 rounded-lg border border-white/5">
-      <h3 class="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-3">About</h3>
-      <div class="text-xs text-gray-300 flex justify-between items-center">
+    <!-- Phần About (Phẳng, kẻ viền dưới) -->
+    <div class="px-4 py-3 border-b border-black/30">
+      <h3 class="text-[11px] font-bold text-[#888] uppercase tracking-wider mb-2">About</h3>
+      <div class="flex justify-between items-center text-[13px] text-[#cccccc]">
         <span>Version</span>
-        <span class="font-mono text-blue-400 bg-[#1e1e1e] px-2 py-1 rounded">v{version}</span>
+        <span class="font-mono text-[#4ec9b0]">v{version}</span>
       </div>
     </div>
 
-    <!-- Update Section -->
-    <div class="bg-[#252526] p-4 rounded-lg border border-white/5">
-      <h3 class="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-3">Updates</h3>
+    <!-- Phần Updates -->
+    <div class="px-4 py-3 border-b border-black/30">
+      <h3 class="text-[11px] font-bold text-[#888] uppercase tracking-wider mb-2">Updates</h3>
       <button 
-        class="w-full bg-[#0d6efd] hover:bg-[#0b5ed7] text-white py-2 rounded-md text-xs font-semibold mb-2 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full bg-[#0e639c] hover:bg-[#1177bb] text-white py-1.5 rounded text-[13px] mb-2 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
         on:click={checkForUpdates}
         disabled={isChecking || updateAvailable}
       >
         {#if isChecking}<span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{/if}
-        {#if isChecking}Checking...{:else}Check for Updates{/if}
+        {isChecking ? 'Checking...' : 'Check for Updates'}
       </button>
 
       {#if updateAvailable}
         <button 
-          class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md text-xs font-semibold mb-2 flex items-center justify-center gap-2 transition-colors"
-          on:click={installUpdate}
+          class="w-full bg-[#2d8848] hover:bg-[#359a54] text-white py-1.5 rounded text-[13px] mb-2 transition-colors flex items-center justify-center gap-2"
+          on:click={downloadUpdate}
         >
-          <Icon name="run" size={14} /> Download & Install
+          <Icon name="run" size={12} /> Open Download Page
         </button>
       {/if}
 
-      <p class="text-xs text-gray-500 mt-2 text-center">{updateStatus}</p>
-      {#if updateProgress > 0 && updateProgress < 100}
-        <div class="w-full bg-[#1e1e1e] h-1.5 rounded-full mt-2 overflow-hidden">
-          <div class="bg-blue-500 h-full transition-all" style="width: {updateProgress}%"></div>
-        </div>
-      {/if}
+      <p class="text-[12px] text-[#888] mt-1">{updateStatus}</p>
     </div>
 
-    <!-- Editor Settings -->
-    <div class="bg-[#252526] p-4 rounded-lg border border-white/5">
-      <h3 class="text-xs font-bold text-[#8a8a8a] uppercase tracking-wider mb-3">Editor</h3>
-      <div class="flex flex-col gap-4 text-xs text-gray-300">
+    <!-- Phần Editor -->
+    <div class="px-4 py-3">
+      <h3 class="text-[11px] font-bold text-[#888] uppercase tracking-wider mb-2">Editor</h3>
+      <div class="flex flex-col gap-3 text-[13px] text-[#cccccc]">
         <div class="flex items-center justify-between">
           <span>Font Size</span>
-          <input type="number" value="14" class="w-16 bg-[#1e1e1e] text-white px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-blue-500 text-center" />
+          <input type="number" value="14" class="w-16 bg-[#3c3c3c] text-white px-2 py-1 rounded border border-transparent focus:border-[#007acc] focus:outline-none text-center" />
         </div>
         <div class="flex items-center justify-between">
           <span>Tab Size</span>
-          <input type="number" value="2" class="w-16 bg-[#1e1e1e] text-white px-2 py-1.5 rounded border border-white/10 focus:outline-none focus:border-blue-500 text-center" />
+          <input type="number" value="2" class="w-16 bg-[#3c3c3c] text-white px-2 py-1 rounded border border-transparent focus:border-[#007acc] focus:outline-none text-center" />
         </div>
         <div class="flex items-center justify-between">
           <span>Word Wrap</span>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" class="sr-only peer" />
-            <div class="w-9 h-5 bg-[#1e1e1e] rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+            <div class="w-9 h-5 bg-[#3c3c3c] rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-[#0e639c] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
           </label>
         </div>
       </div>
