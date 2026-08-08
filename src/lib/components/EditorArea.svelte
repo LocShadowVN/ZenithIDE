@@ -22,9 +22,9 @@
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
     editorInstance.onDidChangeCursorPosition(e => cursorPos.set({ line: e.position.lineNumber, col: e.position.column }));
     
-    // Cập nhật nội dung realtime cho AI
-    editorInstance.onDidChangeModelContent(() => {
-      const model = editorInstance.getModel();
+    // Thêm dấu ! báo rằng editorInstance chắc chắn không null
+    editorInstance!.onDidChangeModelContent(() => {
+      const model = editorInstance!.getModel();
       if (model) editorContent.set(model.getValue());
     });
   });
@@ -54,18 +54,14 @@
     openTabs.update(tabs => {
       const idx = tabs.findIndex(t => t.path === path); 
       tabs.splice(idx, 1);
-      
-      // DỌN DẸP RAM: Xóa model của file đã đóng
       const model = monaco.editor.getModel(monaco.Uri.parse(`file://${path}`));
       if (model) model.dispose();
-
       if ($activeTabPath === path) activeTabPath.set(tabs.length > 0 ? tabs[Math.max(0, idx - 1)].path : null);
       return tabs;
     });
   }
   
   onDestroy(() => {
-    // Dọn dẹp toàn bộ khi tắt app
     monaco.editor.getModels().forEach(m => m.dispose());
     editorInstance?.dispose();
   });
