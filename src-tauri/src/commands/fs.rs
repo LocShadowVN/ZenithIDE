@@ -229,3 +229,19 @@ pub async fn install_compiler(app: AppHandle, lang: String) -> Result<(), String
 pub async fn get_app_version(app: AppHandle) -> Result<String, String> {
     Ok(app.package_info().version.to_string())
 }
+
+#[tauri::command]
+pub async fn get_system_info() -> Result<String, String> {
+    let os = if cfg!(target_os = "windows") {
+        "Windows"
+    } else if cfg!(target_os = "linux") {
+        "Linux"
+    } else if cfg!(target_os = "macos") {
+        "macOS"
+    } else {
+        "Unknown OS"
+    };
+    
+    let arch = std::env::consts::ARCH;
+    Ok(format!("{} ({})", os, arch))
+}
