@@ -45,70 +45,73 @@
   }
 </script>
 
-<aside class="w-72 bg-[#1e293b] flex flex-col border-r border-[#0f172a] overflow-y-auto">
-  <div class="h-10 flex items-center px-4 text-[11px] uppercase tracking-wide text-slate-400 font-semibold border-b border-[#0f172a]">
+<!-- Đổi sang w-full h-full để chiếm chỗ Editor -->
+<div class="w-full h-full bg-[#0f172a] flex flex-col overflow-y-auto">
+  <div class="h-10 flex items-center px-4 text-[11px] uppercase tracking-wide text-slate-400 font-semibold border-b border-[#1e293b] bg-[#1e293b]">
     Settings
   </div>
   
-  <div class="p-4 flex flex-col gap-4">
-    
-    <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700/50">
-      <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">System Info</h3>
-      <div class="flex flex-col gap-2 text-[13px] text-slate-300">
-        <div class="flex justify-between">
-          <span>Version</span>
-          <span class="font-mono text-blue-400">v{version}</span>
-        </div>
-        <div class="flex justify-between">
-          <span>OS</span>
-          <span class="font-mono text-purple-400">{sysInfo}</span>
+  <div class="flex-1 flex flex-col items-center py-10">
+    <div class="w-full max-w-2xl flex flex-col gap-6 px-6">
+      
+      <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-lg">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">System Info</h3>
+        <div class="flex flex-col gap-3 text-[14px] text-slate-300">
+          <div class="flex justify-between">
+            <span>Version</span>
+            <span class="font-mono text-blue-400">v{version}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>OS</span>
+            <span class="font-mono text-purple-400">{sysInfo}</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700/50">
-      <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">Updates</h3>
-      <button 
-        class="w-full modern-btn text-white py-2 rounded-lg text-[13px] mb-2 flex items-center justify-center gap-2 disabled:opacity-50"
-        on:click={checkForUpdates}
-        disabled={isChecking || updateAvailable}
-      >
-        {#if isChecking}<span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{/if}
-        {isChecking ? 'Checking...' : 'Check for Updates'}
-      </button>
-
-      {#if updateAvailable}
+      <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-lg">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Updates</h3>
         <button 
-          class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-[13px] mb-2 flex items-center justify-center gap-2"
-          on:click={downloadUpdate}
+          class="w-full modern-btn text-white py-2 rounded-lg text-[14px] mb-2 flex items-center justify-center gap-2 disabled:opacity-50"
+          on:click={checkForUpdates}
+          disabled={isChecking || updateAvailable}
         >
-          <Icon name="run" size={12} /> Open Download Page
+          {#if isChecking}<span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>{/if}
+          {isChecking ? 'Checking...' : 'Check for Updates'}
         </button>
-      {/if}
 
-      <p class="text-[12px] text-slate-500 mt-1 text-center">{updateStatus}</p>
-    </div>
+        {#if updateAvailable}
+          <button 
+            class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-[14px] mb-2 flex items-center justify-center gap-2"
+            on:click={downloadUpdate}
+          >
+            <Icon name="run" size={14} /> Open Download Page
+          </button>
+        {/if}
 
-    <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700/50">
-      <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">Editor</h3>
-      <div class="flex flex-col gap-3 text-[13px] text-slate-300">
-        <div class="flex items-center justify-between">
-          <span>Font Size</span>
-          <input type="number" value="14" class="w-16 bg-[#334155] text-white px-2 py-1 rounded-md border border-transparent focus:border-blue-500 focus:outline-none text-center" />
-        </div>
-        <div class="flex items-center justify-between">
-          <span>Tab Size</span>
-          <input type="number" value="2" class="w-16 bg-[#334155] text-white px-2 py-1 rounded-md border border-transparent focus:border-blue-500 focus:outline-none text-center" />
-        </div>
-        <div class="flex items-center justify-between">
-          <span>Word Wrap</span>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" class="sr-only peer" />
-            <div class="w-9 h-5 bg-[#334155] rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
-          </label>
+        <p class="text-[13px] text-slate-500 mt-2 text-center">{updateStatus}</p>
+      </div>
+
+      <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-700/50 shadow-lg">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Editor</h3>
+        <div class="flex flex-col gap-4 text-[14px] text-slate-300">
+          <div class="flex items-center justify-between">
+            <span>Font Size</span>
+            <input type="number" value="14" class="w-20 bg-[#334155] text-white px-3 py-1.5 rounded-md border border-transparent focus:border-blue-500 focus:outline-none text-center" />
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Tab Size</span>
+            <input type="number" value="2" class="w-20 bg-[#334155] text-white px-3 py-1.5 rounded-md border border-transparent focus:border-blue-500 focus:outline-none text-center" />
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Word Wrap</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" />
+              <div class="w-11 h-6 bg-[#334155] rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            </label>
+          </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
-</aside>
+</div>
