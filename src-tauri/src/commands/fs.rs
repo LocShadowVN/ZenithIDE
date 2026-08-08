@@ -241,7 +241,7 @@ pub async fn get_system_info() -> Result<String, String> {
     } else {
         "Unknown OS"
     };
-    
+
     let arch = std::env::consts::ARCH;
     Ok(format!("{} ({})", os, arch))
 }
