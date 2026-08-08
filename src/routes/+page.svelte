@@ -15,7 +15,7 @@
   import { activeTabPath, openTabs } from '$lib/stores';
 
   let activeView = 'files';
-  let showTerminal = true;
+  let showTerminal = false;
   let showAI = false;
   let workspacePath = './';
   let sidebarRefreshKey = 0;
@@ -81,50 +81,54 @@
 <main class="flex h-screen w-screen overflow-hidden">
   <ActivityBar bind:activeTab={activeView} setActive={(v) => activeView = v} />
   
+  <!-- Chỉ hiện Sidebar nếu bấm icon Files -->
   {#if activeView === 'files'}
     <Sidebar {workspacePath} refreshKey={sidebarRefreshKey} />
-  {:else if activeView === 'settings'}
-    <SettingsPanel />
   {/if}
 
   <div class="flex-1 flex flex-col">
     <div class="flex-1 flex overflow-hidden">
       <div class="flex-1 flex flex-col">
-        {#if $openTabs.length === 0}
+        
+        <!-- Nếu bấm Settings thì hiện khối lớn -->
+        {#if activeView === 'settings'}
+          <SettingsPanel />
+        {:else if $openTabs.length === 0}
           <WelcomeScreen />
         {:else}
-          <div class="h-9 bg-[#252526] flex items-center px-2 border-b border-black/40 justify-between">
-            <div class="flex items-center gap-2 text-xs text-gray-400">
+          <div class="h-9 bg-[#1e293b] flex items-center px-2 border-b border-[#0f172a] justify-between">
+            <div class="flex items-center gap-2 text-xs text-slate-400">
               {#if isInstalling}
                 <span class="text-blue-400">{installStatus} {installProgress > 0 && installProgress < 100 ? `${installProgress}%` : ''}</span>
               {:else}
-                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('c')}>Setup C/C++</button>
-                <button class="bg-[#2d2d2d] hover:bg-[#3c3c3c] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('rust')}>Setup Rust</button>
+                <button class="bg-[#334155] hover:bg-[#475569] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('c')}>Setup C/C++</button>
+                <button class="bg-[#334155] hover:bg-[#475569] text-white px-2 py-1 rounded transition-colors" on:click={() => setupCompiler('rust')}>Setup Rust</button>
               {/if}
             </div>
-            <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1 text-xs rounded transition-colors" on:click={runCode}>
+            <button class="flex items-center gap-1 modern-btn text-white px-3 py-1 text-xs rounded transition-colors" on:click={runCode}>
               <Icon name="run" size={12} /> {t.run}
             </button>
           </div>
           <div class="flex-1 overflow-hidden"><EditorArea /></div>
         {/if}
+
       </div>
       {#if showAI}<div class="w-80 flex flex-col"><AIPanel /></div>{/if}
     </div>
 
     {#if showTerminal}
-      <div class="h-[35%] flex flex-col border-t border-black/40 bg-[#1e1e1e]">
-        <div class="h-9 flex items-center justify-between px-3 bg-[#252526] border-b border-black/40">
+      <div class="h-[35%] flex flex-col border-t border-[#0f172a] bg-[#0f172a]">
+        <div class="h-9 flex items-center justify-between px-3 bg-[#1e293b] border-b border-[#0f172a]">
           <div class="flex items-center gap-4">
-            <button class="text-[11px] uppercase tracking-wide text-white font-semibold flex items-center gap-2 border-b-2 border-blue-500 py-2" on:click={() => showTerminal = true}><Icon name="terminal" size={14} /> {t.terminal}</button>
-            <button class="text-[11px] uppercase tracking-wide text-[#858585] hover:text-white flex items-center gap-2 py-2" on:click={() => { showAI = !showAI; }}><Icon name="ai" size={14} /> AI</button>
+            <button class="text-[11px] uppercase tracking-wide text-white font-semibold flex items-center gap-2 border-b-2 border-blue-500 py-2"><Icon name="terminal" size={14} /> {t.terminal}</button>
+            <button class="text-[11px] uppercase tracking-wide text-slate-400 hover:text-white flex items-center gap-2 py-2" on:click={() => { showAI = !showAI; }}><Icon name="ai" size={14} /> AI</button>
           </div>
-          <button class="text-[#969696] hover:text-white p-1" on:click={() => showTerminal = false}><Icon name="close" size={14} /></button>
+          <button class="text-slate-400 hover:text-white p-1" on:click={() => showTerminal = false}><Icon name="close" size={14} /></button>
         </div>
         <div class="flex-1 overflow-hidden"><Terminal cwd={workspacePath} /></div>
       </div>
     {:else}
-      <button class="absolute bottom-8 right-4 bg-[#252526] border border-black/40 text-[#cccccc] px-3 py-1 text-xs hover:bg-[#333333] flex items-center gap-1" on:click={() => showTerminal = true}><Icon name="terminal" size={12} /> {t.terminal}</button>
+      <button class="absolute bottom-8 right-4 bg-[#1e293b] border border-[#0f172a] text-slate-300 px-3 py-1 text-xs hover:bg-[#334155] flex items-center gap-1" on:click={() => showTerminal = true}><Icon name="terminal" size={12} /> {t.terminal}</button>
     {/if}
     
     <StatusBar />
