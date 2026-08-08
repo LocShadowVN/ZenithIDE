@@ -31,6 +31,7 @@ pub fn run() {
             commands::fs::get_compiler_path,
             commands::fs::install_compiler,
             commands::fs::get_app_version,
+            commands::fs::get_system_info,
             commands::pty::start_pty,
             commands::pty::write_to_pty,
             commands::ai::ask_ai
