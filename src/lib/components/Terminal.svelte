@@ -8,15 +8,18 @@
 
   let termContainer: HTMLDivElement;
   let terminal: Terminal; 
-  let unlisten: UnlistenFn;
+  let unlisten: UnlistenFunc;
   const ptyId = 1;
-
-  // Khai báo type string rõ ràng
   export let cwd: string;
+  let isInitialized = false;
 
-  onMount(async () => {
+  // Chỉ init khi container thực sự được hiển thị (showTerminal = true)
+  async function initTerminal() {
+    if (isInitialized) return;
+    isInitialized = true;
+
     terminal = new Terminal({ 
-      theme: { background: '#1e1e1e', foreground: '#cccccc', cursor: '#ffffff' }, 
+      theme: { background: '#0f172a', foreground: '#e2e8f0', cursor: '#ffffff' }, 
       fontFamily: 'Consolas, "Courier New", monospace', 
       fontSize: 13, 
       cursorBlink: true 
@@ -30,6 +33,11 @@
     terminal.onData((data) => invoke('write_to_pty', { id: ptyId, data }));
     
     await invoke('start_pty', { id: ptyId, cwd });
+  }
+
+  onMount(() => {
+    // Trì hoãn 100ms để UI kịp vẽ, tránh giật RAM cùng lúc
+    setTimeout(initTerminal, 100);
   });
 
   onDestroy(() => { 
