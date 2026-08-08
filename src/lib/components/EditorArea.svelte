@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import * as monaco from 'monaco-editor';
-  import { openTabs, activeTabPath, cursorPos } from '../stores';
+  import { openTabs, activeTabPath, cursorPos, editorContent } from '../stores';
   import Icon from './icons.svelte';
   import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import { invoke } from '@tauri-apps/api/core';
@@ -15,12 +15,18 @@
     editorInstance = monaco.editor.create(editorContainer, {
       theme: 'vs-dark', automaticLayout: true, fontSize: 14,
       fontFamily: 'Consolas, "Courier New", monospace', minimap: { enabled: true },
-      scrollBeyondLastLine: false, scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10 },
+      scrollBeyondLastLine: false, scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
       padding: { top: 10 }
     });
 
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
     editorInstance.onDidChangeCursorPosition(e => cursorPos.set({ line: e.position.lineNumber, col: e.position.column }));
+    
+    // Cập nhật nội dung realtime cho AI
+    editorInstance.onDidChangeModelContent(() => {
+      const model = editorInstance.getModel();
+      if (model) editorContent.set(model.getValue());
+    });
   });
 
   async function saveFile() {
@@ -40,6 +46,7 @@
       let model = monaco.editor.getModel(monaco.Uri.parse(`file://${tab.path}`));
       if (!model) model = monaco.editor.createModel(tab.content, tab.language, monaco.Uri.parse(`file://${tab.path}`));
       editorInstance.setModel(model);
+      editorContent.set(model.getValue());
     }
   }
 
@@ -47,37 +54,46 @@
     openTabs.update(tabs => {
       const idx = tabs.findIndex(t => t.path === path); 
       tabs.splice(idx, 1);
+      
+      // DỌN DẸP RAM: Xóa model của file đã đóng
+      const model = monaco.editor.getModel(monaco.Uri.parse(`file://${path}`));
+      if (model) model.dispose();
+
       if ($activeTabPath === path) activeTabPath.set(tabs.length > 0 ? tabs[Math.max(0, idx - 1)].path : null);
       return tabs;
     });
   }
-  onDestroy(() => editorInstance?.dispose());
+  
+  onDestroy(() => {
+    // Dọn dẹp toàn bộ khi tắt app
+    monaco.editor.getModels().forEach(m => m.dispose());
+    editorInstance?.dispose();
+  });
 </script>
 
-<div class="flex flex-col h-full bg-[#1e1e1e]">
-  <div class="h-10 flex items-center bg-[#252526] border-b border-black/40 justify-between">
+<div class="flex flex-col h-full bg-[#0f172a]">
+  <div class="h-10 flex items-center bg-[#1e293b] border-b border-[#0f172a] justify-between">
     <div class="h-full flex items-center overflow-x-auto">
       {#if $openTabs.length === 0}
-        <div class="px-4 text-xs text-gray-600">No file open. Use the sidebar to create one.</div>
+        <div class="px-4 text-xs text-slate-500">No file open.</div>
       {/if}
       {#each $openTabs as tab (tab.path)}
-        <!-- Đổi từ button sang div để fix lỗi vỡ layout -->
         <div 
-          class="h-full flex items-center px-3 gap-2 border-r border-black/40 cursor-pointer text-[13px] group {$activeTabPath === tab.path ? 'bg-[#1e1e1e] text-white' : 'bg-[#2d2d2d] text-[#969696] hover:bg-[#252526]'}" 
+          class="h-full flex items-center px-4 gap-2 cursor-pointer text-[13px] group {$activeTabPath === tab.path ? 'bg-[#0f172a] text-white' : 'bg-[#1e293b] text-slate-400 hover:bg-[#334155]'}" 
           role="button" tabindex="0"
           on:click={() => activeTabPath.set(tab.path)}
           on:keydown={(e) => e.key === 'Enter' && activeTabPath.set(tab.path)}
         >
           <Icon name="file" size={14} />
           <span>{tab.name}</span>
-          <button class="hover:bg-white/20 rounded p-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" on:click|stopPropagation={() => closeTab(tab.path)}>
+          <button class="hover:bg-white/20 rounded p-0.5 ml-1 opacity-0 group-hover:opacity-100" on:click|stopPropagation={() => closeTab(tab.path)}>
             <Icon name="close" size={12} />
           </button>
         </div>
       {/each}
     </div>
-    <button class="flex items-center gap-1 bg-[#007acc] hover:bg-[#1f8ad2] text-white px-3 py-1.5 text-xs rounded mr-2 transition-colors disabled:opacity-50" on:click={saveFile} disabled={!$activeTabPath}>
-      {#if isSaving}<span class="text-green-400 flex items-center gap-1"><Icon name="save" size={14}/> Saved!</span>{:else}<Icon name="save" size={14} /> Save{/if}
+    <button class="flex items-center gap-1 modern-btn text-white px-4 py-1.5 text-xs rounded-lg mr-3 disabled:opacity-50" on:click={saveFile} disabled={!$activeTabPath}>
+      {#if isSaving}<span class="text-green-300 flex items-center gap-1"><Icon name="save" size={14}/> Saved!</span>{:else}<Icon name="save" size={14} /> Save{/if}
     </button>
   </div>
   <div class="flex-1" bind:this={editorContainer}></div>
